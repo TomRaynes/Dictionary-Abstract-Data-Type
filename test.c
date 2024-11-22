@@ -11,6 +11,7 @@ int main(void) {
     dict_addword(d, "car");
 
     dict_free(&d);
+    //free(d);
     return 0;
 }
 
@@ -36,11 +37,13 @@ bool dict_addword(dict* p, const char* wd) {
     for (int i=0; word[i]; i++) {
 
         if (!isalpha(word[i]) && word[i] != '\'') {
+            free(word);
             return false;
         }
         word[i] = tolower(word[i]);
     }
     if (check_unique_then_add(p, word, 0)) {
+        free(word);
         return true;
     }
 
@@ -88,7 +91,7 @@ void dict_free(dict** p) {
         return;
     }
     free_tree(*p);
-    //free(p);
+    free(*p);
     p = NULL;
 }
 
