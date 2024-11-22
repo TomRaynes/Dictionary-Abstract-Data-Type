@@ -11,6 +11,9 @@ t27: t27.c t27.h driver.c
 t27_d: t27.c t27.h driver.c
 	gcc driver.c t27.c $(DEBUG) -o t27_d
 
+test: test.c
+	gcc test.c $(DEBUG) -o test
+
 run: t27
 	./t27
 
