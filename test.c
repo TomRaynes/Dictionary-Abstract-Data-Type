@@ -151,10 +151,6 @@ int count_shared_chars(char* word1, char* word2) {
     for (; word1[idx] && word2[idx]; idx++) {
 
         if (word1[idx] != word2[idx]) {
-
-            // if (word1[idx] == '\0' || word2[idx] == '\0') {
-            //
-            // }
             return idx;
         }
     }
@@ -333,7 +329,6 @@ dict* get_terminal(const dict* p, const char* str, int idx) {
         return NULL;
     }
     return get_terminal(p->dwn[pos], str, idx+1);
-
 }
 
 void free_tree(dict* p) {

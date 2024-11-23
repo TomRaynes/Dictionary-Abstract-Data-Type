@@ -90,8 +90,9 @@ int main(void)
 
    // Only one of each word at the moment
    assert(dict_mostcommon(d)==1);
-   // Just increments the freq variable
-   assert(dict_addword(d, "cart"));
+   // Increments the freq variable
+   // Should return false (repeat)
+   assert(!dict_addword(d, "cart"));
    // Now 'cart' has been added twice 
    assert(dict_mostcommon(d)==2);
    // But no new nodes were created
@@ -154,12 +155,15 @@ int main(void)
       // No word is added twice
       assert(dict_mostcommon(d)==mostc[i]);
       // Hard to test for ...
+      // printf("NODE COUNT   = %i\n", dict_nodecount(d));
+      // printf("ACTUAL COUNT = %i\n", nodec[i]);
       assert(dict_nodecount(d)==nodec[i]);
       assert(dict_wordcount(d)==wc);
    }
 
-/* Leave this commented out to begin with
-// !!!!!!!!!!!!!!!!!!!!!!!
+
+   //Leave this commented out to begin with
+   //!!!!!!!!!!!!!!!!!!!!!!!
 // 10% : DICT_AUTOCOMPLETE
    d = dict_init();
    assert(d);
@@ -211,7 +215,7 @@ int main(void)
    // 5 moves to top, 5 moves back down again
    assert(dict_cmp(p1, p2)==10);
    dict_free(&d);
-*/
+
 
    // Free up all those dictionaries
    for(int i=0; i<DICTFILES; i++){
