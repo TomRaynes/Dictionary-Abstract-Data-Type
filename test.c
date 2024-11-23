@@ -81,6 +81,7 @@ void dict_autocomplete(const dict* p, const char* wd, char* ret) {
         }
     }
     strcpy(ret, word);
+    free(word);
 }
 
 dict* get_completion_node(const dict* p, const char* wd, int idx) {
@@ -114,6 +115,8 @@ dict* calc_return_priority(dict* p1, dict* p2) {
     char* word2 = get_word(p2, 1, &idx2);
 
     int priority = strcmp(word1, word2);
+    free(word1);
+    free(word2);
     return priority < 0 ? p1 : p2;
 }
 
