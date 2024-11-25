@@ -13,6 +13,18 @@ char get_character(dict* p);
 dict* get_completion_node(const dict* p, const char* wd, int idx);
 dict* calc_return_priority(dict* p1, dict* p2);
 
+// TEST FUNCTIONS
+void test_check_word(void);
+void test_check_unique_then_add(void);
+void test_get_char_val(void);
+void test_create_node(void);
+void test_free_functions(void);
+void test_counting_functions(void);
+void test_dict_spell_and_get_terminal(void);
+void test_get_word_and_character(void);
+void test_get_shared_chars(void);
+void test_get_completion_node(void);
+
 dict* dict_init(void) {
 
     dict* d = calloc(1, sizeof(dict));
@@ -32,6 +44,7 @@ bool dict_addword(dict* p, const char* wd) {
     char* word = check_word(wd);
 
     if (word == NULL) {
+        //free(word);
         return false;
     }
     if (check_unique_then_add(p, word, 0)) {
@@ -246,6 +259,11 @@ char* get_word(dict* p, int level, int* idx) {
     if (p->up->up == NULL) {
         // level+1 to account for null terminator
         char* str = calloc(level+1, sizeof(char));
+
+        if (str == NULL) {
+            fprintf(stderr, "ERROR: Memory Allocation Failure\n");
+            exit(EXIT_FAILURE);
+        }
         str[(*idx)++] = get_character(p);
         return str;
     }
@@ -289,7 +307,7 @@ int count_shared_chars(char* word1, char* word2) {
 // CHALLENGE2
 void dict_autocomplete(const dict* p, const char* wd, char* ret) {
 
-    if (p == NULL || wd == NULL || ret == NULL) {
+    if (p == NULL || wd == NULL || ret == NULL  || strlen(wd) == 0) {
         return;
     }
     dict* most_freq = get_completion_node(p, wd, 0);
@@ -302,13 +320,6 @@ void dict_autocomplete(const dict* p, const char* wd, char* ret) {
     char* word = get_word(most_freq, 1, &idx);
     int wd_len = strlen(wd);
     strcpy(ret, word+wd_len);
-
-    // for (int i=0; i<wd_len; i++) {
-    //     for (int j=0; word[j]; j++) {
-    //         word[j] = word[j+1];
-    //     }
-    // }
-    // strcpy(ret, word);
     free(word);
 }
 
@@ -353,4 +364,295 @@ dict* calc_return_priority(dict* p1, dict* p2) {
 
 void test(void) {
 
+    test_check_word();
+    test_check_unique_then_add();
+    test_get_char_val();
+    test_create_node();
+    test_free_functions();
+    test_counting_functions();
+    test_dict_spell_and_get_terminal();
+    test_get_word_and_character();
+    test_get_shared_chars();
+    test_get_completion_node();
+}
+
+void test_check_word(void) {
+
+    // str argument is checked for NULL and empty str in parent function
+    char* word = check_word(" ");
+    assert(!word);
+    word = check_word("test-");
+    assert(!word);
+    word = check_word("5test");
+    assert(!word);
+    word = check_word("!?@£$%&");
+    assert(!word);
+
+    word = check_word("test");
+    assert(word);
+    assert(strcmp(word, "test") == 0);
+    free(word);
+    word = check_word("TEST");
+    assert(word);
+    assert(strcmp(word, "test") == 0);
+    free(word);
+    word = check_word("test'S");
+    assert(word);
+    assert(strcmp(word, "test's") == 0);
+    free(word);
+    word = check_word("abcdefghijklmnopqrstuvwxyz'");
+    assert(word);
+    assert(strcmp(word, "abcdefghijklmnopqrstuvwxyz'") == 0);
+    free(word);
+    word = check_word("'ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    assert(word);
+    assert(strcmp(word, "'abcdefghijklmnopqrstuvwxyz") == 0);
+    free(word);
+    word = check_word("t");
+    assert(word);
+    assert(strcmp(word, "t") == 0);
+    free(word);
+    word = check_word("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                       "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    assert(word);
+    assert(strcmp(word, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") == 0);
+    free(word);
+}
+
+void test_check_unique_then_add(void) {
+
+    // Only legal, lower-case strings are ever passed to function
+    dict* d = dict_init();
+    assert(check_unique_then_add(d, "bcdefg", 0));
+    assert(check_unique_then_add(d, "cbdefg", 0));
+    assert(check_unique_then_add(d, "x", 0));
+    assert(check_unique_then_add(d, "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm", 0));
+    assert(check_unique_then_add(d, "don't", 0));
+    assert(check_unique_then_add(d, "dont", 0));
+    assert(check_unique_then_add(d, "''''''''''", 0));
+    assert(!check_unique_then_add(d, "bcdefg", 0));
+    assert(!check_unique_then_add(d, "x", 0));
+    assert(!check_unique_then_add(d, "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm", 0));
+    assert(!check_unique_then_add(d, "''''''''''", 0));
+
+    char str1[100] = "";
+    for (int i=0; i<99; i++) {
+        char str2[2] = "";
+        str2[0] = i % 26 + 'a';
+        strcat(str1, str2);
+        assert(check_unique_then_add(d, str1, 0));
+        assert(!check_unique_then_add(d, str1, 0));
+    }
+    dict_free(&d);
+}
+
+void test_get_char_val(void) {
+
+    for (char ch='a'; ch<='z'; ch++) {
+        assert(get_char_val(ch) == ch - 'a');
+    }
+    assert(get_char_val('\'') == 26);
+}
+
+void test_create_node(void) {
+
+    dict* d = create_node();
+    assert(d);
+    free(d);
+}
+
+void test_free_functions(void) {
+
+    dict* d = dict_init();
+
+    char str1[100] = "";
+    for (int i=0; i<99; i++) {
+        char str2[2] = "";
+        str2[0] = i % 26 + 'a';
+        strcat(str1, str2);
+        dict_addword(d, str1);
+    }
+    free_tree(d);
+    for (int i=0; i<ALPHA; i++) {
+        assert(d->dwn[i] == NULL);
+    }
+    dict_free(&d);
+    assert(!d);
+
+}
+
+void test_counting_functions(void) {
+
+    dict* d = dict_init();
+
+    char str1[100] = "";
+    for (int i=0; i<99; i++) {
+        char str2[2] = "";
+        str2[0] = i % 26 + 'a';
+        strcat(str1, str2);
+        dict_addword(d, str1);
+        assert(dict_wordcount(d) == i + 1);
+        assert(dict_nodecount(d) == i + 2);
+    }
+    dict_addword(d, "test");
+    assert(dict_wordcount(d) == 100);
+    assert(get_child_counts(d, 0, dict_wordcount) == 100);
+    assert(dict_nodecount(d) == 104);
+    assert(get_child_counts(d, 1, dict_nodecount) == 104);
+    dict_addword(d, "TEST");
+    assert(dict_wordcount(d) == 101);
+    assert(get_child_counts(d, 0, dict_wordcount) == 101);
+    assert(dict_nodecount(d) == 104);
+    assert(get_child_counts(d, 1, dict_nodecount) == 104);
+    dict_addword(d, "testing");
+    assert(dict_wordcount(d) == 102);
+    assert(get_child_counts(d, 0, dict_wordcount) == 102);
+    assert(dict_nodecount(d) == 107);
+    assert(get_child_counts(d, 1, dict_nodecount) == 107);
+    dict_free(&d);
+}
+
+void test_dict_spell_and_get_terminal(void) {
+
+    dict* d = dict_init();
+    assert(dict_spell(d, "test") == NULL);
+    assert(get_terminal(d, "test", 0) == NULL);
+    dict_addword(d, "test");
+    dict_addword(d, "AAAAA");
+    dict_addword(d, "abcdefghijklmnopqrstuvwxyz");
+    dict_addword(d, "X'X'X'X");
+    dict_addword(d, "'''''");
+
+    dict* s = dict_spell(d, "test");
+    assert(get_character(s) == 't');
+    s = get_terminal(d, "test", 0);
+    assert(get_character(s) == 't');
+    s = dict_spell(d, "aaaaa");
+    assert(get_character(s) == 'a');
+    s = get_terminal(d, "aaaaa", 0);
+    assert(get_character(s) == 'a');
+    s = dict_spell(d, "abcdefghijklmnopqrstuvwxyz");
+    assert(get_character(s) == 'z');
+    s = get_terminal(d, "abcdefghijklmnopqrstuvwxyz", 0);
+    assert(get_character(s) == 'z');
+    s = dict_spell(d, "x'x'x'x");
+    assert(get_character(s) == 'x');
+    s = get_terminal(d, "x'x'x'x", 0);
+    assert(get_character(s) == 'x');
+    s = dict_spell(d, "'''''");
+    assert(get_character(s) == '\'');
+    s = get_terminal(d, "'''''", 0);
+    assert(get_character(s) == '\'');
+    dict_free(&d);
+}
+
+void test_get_word_and_character(void) {
+
+    dict* d = dict_init();
+
+    dict_addword(d, "test");
+    dict_addword(d, "AAAAAAAAAA");
+    dict_addword(d, "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm");
+    dict_addword(d, "abcdefg'");
+    dict_addword(d, "''''''''''");
+
+    int idx = 0; dict* p = dict_spell(d, "test");
+    char* str = get_word(p, 1, &idx);
+    assert(strcmp(str, "test") == 0);
+    assert(get_character(p) == 't');
+
+    idx = 0; p = dict_spell(d, "aaaaaaaaaa");
+    str = get_word(p, 1, &idx);
+    assert(strcmp(str, "aaaaaaaaaa") == 0);
+    assert(get_character(p) == 'a');
+    char str2[53] = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
+    idx = 0; p = dict_spell(d, str2);
+    str = get_word(p, 1, &idx);
+    assert(strcmp(str, str2) == 0);
+    assert(get_character(p) == 'm');
+    idx = 0; p = dict_spell(d, "abcdefg'");
+    str = get_word(p, 1, &idx);
+    assert(strcmp(str, "abcdefg'") == 0);
+    assert(get_character(p) == '\'');
+    idx = 0; p = dict_spell(d, "''''''''''");
+    str = get_word(p, 1, &idx);
+    assert(strcmp(str, "''''''''''") == 0);
+    assert(get_character(p) == '\'');
+
+    char str3[100] = "";
+    for (int i=0; i<99; i++) {
+        char str4[2] = "";
+        str4[0] = i % 26 + 'a'; idx = 0;
+        strcat(str3, str4);
+        dict_addword(d, str3); p = dict_spell(d, str3);
+        str = get_word(p, 1, &idx);
+        assert(strcmp(str, str3) == 0);
+        assert(get_character(p) == str4[0]);
+    }
+    dict_free(&d);
+}
+
+void test_get_shared_chars(void) {
+
+    assert(count_shared_chars("test", "test") == 4);
+    assert(count_shared_chars("test", "tests") == 4);
+    assert(count_shared_chars("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnpqrstuvwxyz") == 14);
+    assert(count_shared_chars("xxxxxxx'x", "xxxxxxxx") == 7);
+    assert(count_shared_chars("q", "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm") == 1);
+}
+
+void test_get_completion_node(void) {
+
+    dict* d = dict_init();
+
+    dict_addword(d, "aaa");
+    dict_addword(d, "abb");
+    dict_addword(d, "abb");
+    assert(get_completion_node(d, "a", 0) == dict_spell(d, "abb"));
+    dict_addword(d, "acc");
+    dict_addword(d, "acc");
+    dict_addword(d, "acc");
+    assert(get_completion_node(d, "a", 0) == dict_spell(d, "acc"));
+    dict_addword(d, "a'");
+    dict_addword(d, "a'");
+    dict_addword(d, "a'");
+    dict_addword(d, "a'");
+    assert(get_completion_node(d, "a", 0) == dict_spell(d, "a'"));
+    char str[] = "qwertyuiopasdfghjklzxcvbnm'qwertyuiopasdfghjklzxcvbnm'";
+    for (int i=0; i<5; i++) {
+        dict_addword(d, str);
+    }
+    assert(get_completion_node(d, "qwerty", 0) == dict_spell(d, str));
+    for (int i=0; i<6; i++) {
+        dict_addword(d, "abbbb");
+        dict_addword(d, "acccc");
+    }
+    dict* s1 = dict_spell(d, "abbbb"); dict* s2 = dict_spell(d, "acccc");
+    assert(get_completion_node(d, "a", 0) == s1);
+    assert(calc_return_priority(s1, s2) == s1);
+    char str2[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    for (int i=0; i<7; i++) {
+        dict_addword(d, str2);
+        dict_addword(d, "ab");
+    }
+    s1 = dict_spell(d, str2); s2 = dict_spell(d, "ab");
+    assert(get_completion_node(d, "a", 0) == dict_spell(d, str2));
+    assert(calc_return_priority(s1, s2) == s1);
+    dict_addword(d, "abcdefghijklmnopqrstuvwxyz'"); s1 = dict_spell(d, "abcdefghijklmnopqrstuvwxyz'");
+    dict_addword(d, "abcdefghijklmnopqrstuvwxyz"); s2 = dict_spell(d, "abcdefghijklmnopqrstuvwxyz");
+    assert(calc_return_priority(s1, s2) == s2);
+    dict_addword(d, "aaaaaaaaaa"); s1 = dict_spell(d, "aaaaaaaaaa");
+    dict_addword(d, "'"); s2 = dict_spell(d, "'");
+    assert(calc_return_priority(s1, s2) == s2);
+    dict_addword(d, "'"); s1 = dict_spell(d, "'");
+    dict_addword(d, "''"); s2 = dict_spell(d, "''");
+    assert(calc_return_priority(s1, s2) == s1);
+    dict_free(&d);
 }
