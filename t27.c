@@ -133,11 +133,7 @@ void inc_freq_and_set_terminal(dict* n) {
 
 void dict_free(dict** d) {
 
-    if (d == NULL) {
-        return;
-    }
-    if (*d == NULL) {
-        free(d);
+    if (d == NULL || *d == NULL) {
         return;
     }
     free_tree(*d);
@@ -796,24 +792,29 @@ void test_get_word_and_character(void) {
     char* str = get_word(p, 1, &idx);
     assert(strcmp(str, "test") == 0);
     assert(get_character(p) == 't');
+    free(str);
 
     idx = 0; p = dict_spell(d, "aaaaaaaaaa");
     str = get_word(p, 1, &idx);
     assert(strcmp(str, "aaaaaaaaaa") == 0);
     assert(get_character(p) == 'a');
+    free(str);
     char str2[53] = "qwertyuiopasdfghjklzxcvbnmqwertyuiopasdfghjklzxcvbnm";
     idx = 0; p = dict_spell(d, str2);
     str = get_word(p, 1, &idx);
     assert(strcmp(str, str2) == 0);
     assert(get_character(p) == 'm');
+    free(str);
     idx = 0; p = dict_spell(d, "abcdefg'");
     str = get_word(p, 1, &idx);
     assert(strcmp(str, "abcdefg'") == 0);
     assert(get_character(p) == '\'');
+    free(str);
     idx = 0; p = dict_spell(d, "''''''''''");
     str = get_word(p, 1, &idx);
     assert(strcmp(str, "''''''''''") == 0);
     assert(get_character(p) == '\'');
+    free(str);
 
     char str3[100] = "";
     for (int i=0; i<99; i++) {
@@ -824,6 +825,7 @@ void test_get_word_and_character(void) {
         str = get_word(p, 1, &idx);
         assert(strcmp(str, str3) == 0);
         assert(get_character(p) == str4[0]);
+        free(str);
     }
     dict_free(&d);
 }
