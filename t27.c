@@ -18,6 +18,7 @@ dict* calc_return_priority(dict* p1, dict* p2);
 
 // TEST FUNCTIONS
 void test_dict_init(void);
+void check_pointer(void* p);
 void test_dict_addword(void);
 void test_dict_spell_and_get_terminal(void);
 void test_dict_mostcommon(void);
@@ -37,12 +38,16 @@ void test_get_completion_node(void);
 dict* dict_init(void) {
 
     dict* d = calloc(1, sizeof(dict));
+    check_pointer(d);
+    return d;
+}
 
-    if (d == NULL) {
+void check_pointer(void* p) {
+
+    if (p == NULL) {
         fprintf(stderr, "ERROR: Memory Allocation Failure\n");
         exit(EXIT_FAILURE);
     }
-    return d;
 }
 
 bool dict_addword(dict* p, const char* wd) {
@@ -66,11 +71,7 @@ bool dict_addword(dict* p, const char* wd) {
 char* check_word(const char* wd) {
 
     char* word = calloc(strlen(wd)+1, sizeof(char));
-
-    if (word == NULL) {
-        fprintf(stderr, "ERROR: Memory Allocation Failed\n");
-        exit(EXIT_FAILURE);
-    }
+    check_pointer(word);
     strcpy(word, wd);
 
     for (int i=0; word[i]; i++) {
@@ -88,7 +89,7 @@ bool check_unique_then_add(dict* n, char* wd, int idx) {
 
     int pos = get_char_val(wd[idx]);
 
-    // Path for the given word reaches a terminal node, therefore word is unique
+    // Linked path for the given word reaches a terminal node, therefore word is unique
     if (n->dwn[pos] == NULL) {
         n->dwn[pos] = dict_init();
         n->dwn[pos]->up = n;
@@ -152,8 +153,6 @@ void free_tree(dict* p) {
             p->dwn[i] = NULL;
         }
     }
-    //free(p);
-    p = NULL;
 }
 
 int dict_wordcount(const dict* p) {
@@ -179,6 +178,7 @@ int dict_nodecount(const dict* p) {
     return get_child_counts(p, count, dict_nodecount);
 }
 
+// Recursion alternates between dict_wordcount/nodecount and function
 int get_child_counts(const dict* p, int count, int (*mode)(const dict* p)) {
 
     for (int i=0; i<ALPHA; i++) {
@@ -256,17 +256,15 @@ unsigned dict_cmp(dict* p1, dict* p2) {
 
 char* get_word(dict* p, int level, int* idx) {
 
+    // Node corresponding to fist letter of word is encountered
     if (p->up->up == NULL) {
         // level+1 to account for null terminator
         char* str = calloc(level+1, sizeof(char));
-
-        if (str == NULL) {
-            fprintf(stderr, "ERROR: Memory Allocation Failure\n");
-            exit(EXIT_FAILURE);
-        }
+        check_pointer(str);
         str[(*idx)++] = get_character(p);
         return str;
     }
+    // Recursively step towards root until first character is reached
     char* str = get_word(p->up, level+1, idx);
     str[(*idx)++] = get_character(p);
 
@@ -331,9 +329,14 @@ void dict_autocomplete(const dict* p, const char* wd, char* ret) {
 
 dict* get_completion_node(const dict* p, const char* wd, int idx) {
 
+    // step down branch corresponding to 'wd' until NULL char or NULL node
     if (idx < (int) strlen(wd)) {
         int pos = get_char_val(wd[idx]);
-        return get_completion_node(p->dwn[pos], wd, idx+1);
+
+        if (p->dwn[pos]) {
+            return get_completion_node(p->dwn[pos], wd, idx+1);
+        }
+        return NULL;
     }
     dict* ret = idx > (int) strlen(wd) ? (dict*) p : NULL;
     dict* tmp = NULL;
@@ -566,7 +569,22 @@ void test_dict_cmp(void) {
 
 void test_dict_autocomplete(void) {
 
-    dict* d = dict_init(); char ret[20] = "";
+    dict* d = dict_init(); char ret[10] = "";
+    dict_autocomplete(NULL, NULL, ret);
+    assert(strcmp(ret, "") == 0);
+    dict_autocomplete(d, NULL, ret);
+    assert(strcmp(ret, "") == 0);
+    dict_autocomplete(NULL, "test", ret);
+    assert(strcmp(ret, "") == 0);
+    dict_autocomplete(d, "test", ret);
+    assert(strcmp(ret, "") == 0);
+    dict_autocomplete(d, "", ret);
+    assert(strcmp(ret, "") == 0);
+    dict_autocomplete(d, "test", ret);
+    assert(strcmp(ret, "") == 0);
+    strcpy(ret, "XXXXX");
+    dict_autocomplete(d, "test", NULL);
+    assert(strcmp(ret, "XXXXX") == 0);
     dict_addword(d, "test");
     dict_addword(d, "testing");
     dict_addword(d, "tested");
