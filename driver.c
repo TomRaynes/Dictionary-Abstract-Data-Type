@@ -93,7 +93,7 @@ int main(void)
    // Increments the freq variable
    // Should return false (repeat)
    assert(!dict_addword(d, "cart"));
-   // Now 'cart' has been added twice 
+   // Now 'cart' has been added twice
    assert(dict_mostcommon(d)==2);
    // But no new nodes were created
    assert(dict_nodecount(d)==9);
@@ -155,15 +155,12 @@ int main(void)
       // No word is added twice
       assert(dict_mostcommon(d)==mostc[i]);
       // Hard to test for ...
-      // printf("NODE COUNT   = %i\n", dict_nodecount(d));
-      // printf("ACTUAL COUNT = %i\n", nodec[i]);
       assert(dict_nodecount(d)==nodec[i]);
       assert(dict_wordcount(d)==wc);
    }
 
-
-   //Leave this commented out to begin with
-   //!!!!!!!!!!!!!!!!!!!!!!!
+// Leave this commented out to begin with
+// !!!!!!!!!!!!!!!!!!!!!!!
 // 10% : DICT_AUTOCOMPLETE
    d = dict_init();
    assert(d);
@@ -189,7 +186,7 @@ int main(void)
    // dictionary built above
    p = dcts[2];
    dict_autocomplete(p, "t", str);
-   // 'the' is most common word that 
+   // 'the' is most common word that
    // can be found from 't'
    assert(strcmp(str, "he")==0);
    // But given 'the' what comes after it?

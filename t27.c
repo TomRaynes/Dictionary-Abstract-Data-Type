@@ -1,6 +1,7 @@
 #include "t27.h"
 
 #define EMPTY_STR ""
+#define END_OF_STR '\0'
 
 char* check_word(const char* wd);
 bool check_unique_then_add(dict* n, char* wd, int idx);
@@ -94,7 +95,7 @@ bool check_unique_then_add(dict* n, char* wd, int idx) {
         n->dwn[pos] = dict_init();
         n->dwn[pos]->up = n;
 
-        if (wd[idx+1] == '\0') {
+        if (wd[idx+1] == END_OF_STR) {
             inc_freq_and_set_terminal(n->dwn[pos]);
             return true;
         }
@@ -102,7 +103,7 @@ bool check_unique_then_add(dict* n, char* wd, int idx) {
         return true;
     }
     // Node corresponding to the last character of the word is reached
-    if (wd[idx+1] == '\0') {
+    if (wd[idx+1] == END_OF_STR) {
         return unique_word(n->dwn[pos]) ? true : false;
     }
     // Both word index and corresponding node path are non-terminal
@@ -212,7 +213,7 @@ dict* get_terminal(const dict* p, const char* str, int idx) {
     if (p->dwn[pos] == NULL) {
         return NULL;
     }
-    if (str[idx+1] == '\0') {
+    if (str[idx+1] == END_OF_STR) {
         return p->dwn[pos]->terminal ? p->dwn[pos] : NULL;
     }
     return get_terminal(p->dwn[pos], str, idx+1);
@@ -269,7 +270,7 @@ char* get_word(dict* p, int level, int* idx) {
     str[(*idx)++] = get_character(p);
 
     if (level == 0) {
-        str[*idx] = '\0';
+        str[*idx] = END_OF_STR;
     }
     return str;
 }
