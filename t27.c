@@ -1,7 +1,25 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
+#include <assert.h>
 #include "t27.h"
 
 #define EMPTY_STR ""
 #define END_OF_STR '\0'
+#define ALPHA 27
+
+struct dict {
+    // 'Down' pointers next letter of word a-z or '
+    dict* dwn[ALPHA];
+    // The parent pointer, useful for traversing back up the tree
+    dict* up;
+    // Is this node the end of a word?
+    bool terminal;
+    // Store occurrences of the same word, only used in terminal nodes
+    int freq;
+};
 
 char* check_word(const char* wd);
 bool check_unique_then_add(dict* n, char* wd, int idx);
@@ -16,10 +34,11 @@ int count_shared_chars(char* word1, char* word2);
 char get_character(dict* p);
 dict* get_completion_node(const dict* p, const char* wd, int idx);
 dict* calc_return_priority(dict* p1, dict* p2);
+void check_pointer(void* p);
 
 // TEST FUNCTIONS
+void test(void);
 void test_dict_init(void);
-void check_pointer(void* p);
 void test_dict_addword(void);
 void test_dict_spell_and_get_terminal(void);
 void test_dict_mostcommon(void);
@@ -35,6 +54,7 @@ void test_counting_functions(void);
 void test_get_word_and_character(void);
 void test_count_shared_chars(void);
 void test_get_completion_node(void);
+
 
 dict* dict_init(void) {
 
