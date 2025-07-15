@@ -17,47 +17,47 @@ gcc main.c t27.c -o dictionary_program
 
 ### Supported Operations
 - Create a new dictionary
-```
+```c
 dict* dict_init(void);
 ```
 
 - Add a string to a dictionary
-```
+```c
 bool dict_addword(dict* p, const char* wd);
 ```
 
 - Get the total number of nodes in a dictionary
-```
+```c
 int dict_nodecount(const dict* p);
 ```
 
 - Get the number of times a word has been added to a dictionary
-```
+```c
 int dict_wordcount(const dict* p);
 ```
 
 - Get the terminal node from a string, given the string is in the dictionary
-```
+```c
 dict* dict_spell(const dict* p, const char* str);
 ```
 
 - Get the frequency of the most common string in the dictionary
-```
+```c
 int dict_mostcommon(const dict* p);
 ```
 
 - Get the number of nodes separating two different nodes in the same dictionary
-```
+```c
 unsigned dict_cmp(dict* p1, dict* p2);
 ```
 
-- Given a string (`wd`), find the most common word in a dictionary beginning with this string. The characters from this most common word that are not found in the original string are assigned to `ret`.
-```
+- Given a string, `wd`, find the most common word in a dictionary beginning with this string. The characters from this most common word that are not found in the original string are assigned to `ret`.
+```c
 void dict_autocomplete(const dict* p, const char* wd, char* ret);
 ```
 
 - Free all memory associated with a dictionary
-```
+```c
 void dict_free(dict** p);
 ```
 
@@ -67,7 +67,7 @@ Strings are stored using a trie-like data structure, where each node is a struct
 pointers to child-nodes, a pointer to the parent node (NULL if node is root), a boolean representing if the node 
 is terminal, and a integer representing the frequency of a word in the dictionary (only used in terminal nodes).
 
-```
+```c
 struct dict {
     struct dict* child_nodes[27];
     struct dict* parent_node;
@@ -86,7 +86,7 @@ is shown below.
 </div>
 
 Given the execution of the following code:
-```
+```c
 dict* d = dict_init();
 dict_addword(d, "code");
 dict_addword(d, "code");
