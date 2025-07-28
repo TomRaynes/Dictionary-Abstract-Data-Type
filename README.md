@@ -4,6 +4,11 @@ This repository contains an implementation of a dictionary abstract data type (A
 such as spell-checking and predictive text, the dictionary ADT allows for efficient querying of a collection of
 similar strings.
 
+<div align="center">
+    <br>An alternative implementation of this ADT using a binary
+    <br>search tree bucketed hash table is found <a href="https://github.com/TomRaynes/Dictionary-ADT-Extension">here</a> 
+</div>
+
 ## Usage
 1. Download the files `t27.c` and `t27.h`, and place them inside your project directory
 2. Add the following line to the top line of your project code or header file:
